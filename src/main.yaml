@@ -1,0 +1,31 @@
+# Configuration file for training and evaluation
+
+# Reproducibility
+seed: 42
+
+dataset:
+  # Options: IP102, Cotton80, SoyLocal
+  name: IP102
+  root: ./data/IP102
+  batch_size: 32
+  num_workers: 6
+
+model:
+  # name: efficientnet_b2
+  # name: efficientvit_b3
+  name: resnet50
+  pretrained: true
+
+other:
+  constractive_learning:
+    # Options: SimCLR, MoCo, BYOL, MaskCOV, EDG
+    name: SimCLR
+
+training:
+  epochs: 20
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  device: cuda
+
+logging:
+  save_dir: ./logs
