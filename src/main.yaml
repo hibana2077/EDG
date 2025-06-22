@@ -11,9 +11,9 @@ dataset:
   num_workers: 6
 
 model:
-  # name: efficientnet_b2
-  # name: efficientvit_b3
-  name: resnet50
+  # name: resnetrs200
+  # name: vgg19_bn
+  name: tiny_vit_21m_384
   pretrained: true
 
 other:
