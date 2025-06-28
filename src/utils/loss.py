@@ -56,7 +56,6 @@ class MomentHoMDivLoss(nn.Module):
         l_hom = (skew_x  - skew_xp ).abs().mean() + (kurt_x - kurt_xp).abs().mean()
 
         # ---------- L_div ----------
-
         p = get_probs(x)
         q = get_probs(x_prime)
         l_div = F.kl_div(q.log(), p, reduction='batchmean')
