@@ -32,6 +32,10 @@ def centralized_moments(x: torch.Tensor, order: int, eps: float = 1e-8):
     cm = (centralized ** order).mean(dim=-1)   # (B, C)
     return cm / (std.squeeze(-1) ** order + eps)
 
+def get_probs(t: torch.Tensor) -> torch.Tensor:
+    B = t.size(0)
+    return F.softmax(t.view(B, -1), dim=1)
+
 class MomentHoMDivLoss(nn.Module):
     """
     HoM = Σ_c ( |skew_x - skew_x'| + |kurt_x - kurt_x'| )
@@ -49,13 +53,9 @@ class MomentHoMDivLoss(nn.Module):
         kurt_x  = centralized_moments(x, 4)
         kurt_xp = centralized_moments(x_prime, 4)
 
-        l_hom = (skew_x  - skew_xp ).abs().mean() + \
-                (kurt_x - kurt_xp).abs().mean()
+        l_hom = (skew_x  - skew_xp ).abs().mean() + (kurt_x - kurt_xp).abs().mean()
 
         # ---------- L_div ----------
-        def get_probs(t):
-            B = t.size(0)
-            return F.softmax(t.view(B, -1), dim=1)
 
         p = get_probs(x)
         q = get_probs(x_prime)
