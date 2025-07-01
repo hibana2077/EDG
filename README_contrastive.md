@@ -37,6 +37,7 @@ src/
 ### 1. Environment Setup
 
 Make sure to install the required dependencies:
+
 ```bash
 pip install torch torchvision timm tqdm pyyaml
 ```
@@ -66,6 +67,7 @@ python train_contrastive.py
 ```
 
 The training process includes two separate backpropagations:
+
 1. AugNet is trained with MomentHoMDivLoss.
 2. The main model is trained with InfoNCE + classification loss.
 
@@ -104,6 +106,7 @@ python inference.py --checkpoint checkpoints/checkpoint_epoch_50.pth \
 ### 2. Learnable Augmentation
 
 AugNet uses TinyViT blocks to achieve learnable data augmentation, trained with MomentHoMDivLoss:
+
 - Higher-order moment matching (HoM): matches skewness and kurtosis.
 - KL divergence (Div): maintains distribution consistency.
 
@@ -128,11 +131,13 @@ InfoNCE loss is applied to gradient features instead of direct features, providi
 ## Dataset Integration
 
 Currently supports the following datasets (implement the corresponding dataset class as needed):
+
 - Cotton80
 - IP102
 - SoyLocal
 
 To add a new dataset:
+
 1. Implement your dataset class in `dataset/`
 2. Update the `load_existing_dataset` function in `utils/data_utils.py`
 3. Set `dataset_name` in the config file
@@ -140,6 +145,7 @@ To add a new dataset:
 ## Training Monitoring
 
 The training process logs the following metrics:
+
 - AugNet Loss (MomentHoMDivLoss)
 - Contrastive Loss (InfoNCE)
 - Classification Loss (CrossEntropy)
@@ -162,6 +168,7 @@ Logs are saved in `training.log`, and checkpoints are saved in the `checkpoints/
 ## Extensions
 
 Easily extensible features:
+
 - Different backbone architectures
 - Other contrastive loss functions
 - Custom augmentation strategies
@@ -170,8 +177,8 @@ Easily extensible features:
 ## References
 
 This implementation combines:
+
 - SimCLR contrastive learning framework
 - The concept of learnable data augmentation
 - Distribution matching of higher-order statistics
 - Representation learning with gradient features
-
