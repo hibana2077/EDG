@@ -17,7 +17,7 @@ class AugNet(nn.Module):
         with torch.no_grad():
             # Apply Monte Carlo Gaussian noise
             noise = torch.randn_like(x) * 0.1
-            x = x + noise
+        x = x + noise
         x = self.backbone2(x)
         return x
 
