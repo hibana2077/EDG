@@ -33,7 +33,7 @@ save_interval: 10
 checkpoint_dir: "checkpoints"
 
 # Dataset paths (update these based on your dataset)
-dataset_name: "cotton80"  # Options: cotton80, ip102, soylocal
+dataset_name: "Cotton80"  # Options: Cotton80, IP102, SoyLocal
 data_root: "data"
 train_split: "train"
 val_split: "val"
