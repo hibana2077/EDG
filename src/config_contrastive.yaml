@@ -34,6 +34,6 @@ checkpoint_dir: "checkpoints"
 
 # Dataset paths (update these based on your dataset)
 dataset_name: "cotton80"  # Options: cotton80, ip102, soylocal
-data_root: "path/to/your/dataset"
+data_root: "data"
 train_split: "train"
 val_split: "val"
