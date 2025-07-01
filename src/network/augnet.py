@@ -28,3 +28,9 @@ if __name__ == "__main__":
     input_tensor = torch.randn(1, 3, 224, 224)  # Batch size of 1, 3 channels, 224x224 image
     output = model(input_tensor)
     print(output.shape)  # Output shape will depend on the TinyVitBlock implementation
+    # cal mse
+    target_tensor = torch.randn_like(output)
+    mse_loss = F.mse_loss(output, target_tensor)
+    l1_loss = F.l1_loss(output, target_tensor)
+    print(f'L1 Loss: {l1_loss.item()}')  # Print the L1 loss value
+    print(f'MSE Loss: {mse_loss.item()}')  # Print the MSE loss value
