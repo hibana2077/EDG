@@ -126,6 +126,7 @@ class ContrastiveModel(nn.Module):
         proj2 = torch.where(torch.isnan(proj2), torch.zeros_like(proj2), proj2)
         
         # InfoNCE loss (will be computed on gradient features during backward)
+        print(f"proj1 shape: {proj1.shape}, proj2 shape: {proj2.shape}")
         contrastive_loss = self.infonce_loss(proj1, proj2)
         
         return {
