@@ -34,7 +34,9 @@ class ContrastiveInference:
             hidden_dim=self.config.get('hidden_dim', 2048),
             augnet_dim=self.config.get('augnet_dim', 224),
             augnet_heads=self.config.get('augnet_heads', 8),
-            temperature=self.config.get('temperature', 0.1)
+            temperature=self.config.get('temperature', 0.1),
+            enable_infonce=self.config.get('enable_infonce', True),
+            infonce_feature_type=self.config.get('infonce_feature_type', 'grad')
         ).to(self.device)
         
         # Load checkpoint

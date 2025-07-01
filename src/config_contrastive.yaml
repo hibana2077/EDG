@@ -23,6 +23,7 @@ weight_decay: 1.0e-4
 lambda_moment: 1.0  # Weight for moment loss in AugNet training
 gamma_div: 1.0      # Weight for divergence loss in AugNet training
 enable_infonce: false  # Enable/disable InfoNCE contrastive loss
+infonce_feature_type: "image"  # Options: "image", "grad" - Choose between image features or gradient features for InfoNCE
 
 # Data Configuration
 batch_size: 32

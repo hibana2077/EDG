@@ -52,7 +52,9 @@ def quick_start_example():
         hidden_dim=256,
         augnet_dim=224,
         augnet_heads=4,
-        temperature=0.1
+        temperature=0.1,
+        enable_infonce=True,
+        infonce_feature_type="grad"  # Default to gradient features for compatibility
     ).to(device)
     
     print(f"Number of model parameters: {sum(p.numel() for p in model.parameters()):,}")

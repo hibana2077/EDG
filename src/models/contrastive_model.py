@@ -23,11 +23,13 @@ class ContrastiveModel(nn.Module):
                  augnet_dim: int = 224,
                  augnet_heads: int = 8,
                  temperature: float = 0.1,
-                 enable_infonce: bool = True):
+                 enable_infonce: bool = True,
+                 infonce_feature_type: str = "grad"):
         super().__init__()
         
         # Store configuration
         self.enable_infonce = enable_infonce
+        self.infonce_feature_type = infonce_feature_type
         
         # Components
         self.augnet = AugNet(dim=augnet_dim, num_heads=augnet_heads)
@@ -50,11 +52,14 @@ class ContrastiveModel(nn.Module):
         self.classification_head = nn.Linear(backbone_dim, num_classes)
         
         # Loss functions
-        self.infonce_loss = InfoNCELoss(temperature=temperature)
+        self.infonce_loss = InfoNCELoss(temperature=temperature, feature_type=infonce_feature_type)
         self.ce_loss = nn.CrossEntropyLoss()
         
-        # Gradient hook
-        self.gradient_hook = GradientHook()
+        # Gradient hook (only needed for gradient-based InfoNCE)
+        if infonce_feature_type == "grad":
+            self.gradient_hook = GradientHook()
+        else:
+            self.gradient_hook = None
         
     def forward_backbone(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """
@@ -66,8 +71,8 @@ class ContrastiveModel(nn.Module):
         # Get projections for contrastive learning
         projections = self.projection_head(features_flat)
         
-        # Register hook for gradient features only if InfoNCE is enabled and requires_grad
-        if self.enable_infonce and projections.requires_grad:
+        # Register hook for gradient features only if InfoNCE is enabled, requires_grad, and using grad features
+        if self.enable_infonce and self.infonce_feature_type == "grad" and projections.requires_grad and self.gradient_hook is not None:
             projections.register_hook(self.gradient_hook.hook_fn)
         
         return features_flat, projections
@@ -129,11 +134,16 @@ class ContrastiveModel(nn.Module):
         proj1 = torch.where(torch.isnan(proj1), torch.zeros_like(proj1), proj1)
         proj2 = torch.where(torch.isnan(proj2), torch.zeros_like(proj2), proj2)
         
-        # InfoNCE loss (will be computed on gradient features during backward)
-        # Only compute if enabled
+        # InfoNCE loss - compute based on feature type
         if self.enable_infonce:
-            # print(f"proj1 shape: {proj1.shape}, proj2 shape: {proj2.shape}")
-            contrastive_loss = self.infonce_loss(proj1, proj2)
+            if self.infonce_feature_type == "image":
+                # Use image features (projections directly)
+                contrastive_loss = self.infonce_loss(proj1, proj2)
+            elif self.infonce_feature_type == "grad":
+                # Use gradient features (will be computed during backward pass)
+                contrastive_loss = self.infonce_loss(proj1, proj2)
+            else:
+                raise ValueError(f"Invalid infonce_feature_type: {self.infonce_feature_type}. Must be 'image' or 'grad'")
         else:
             contrastive_loss = torch.tensor(0.0, device=proj1.device, requires_grad=True)
         
@@ -206,7 +216,8 @@ class ContrastiveTrainer:
         
         # Step 2: Train main model
         self.model_optimizer.zero_grad()
-        self.model.gradient_hook.clear()
+        if self.model.gradient_hook is not None:
+            self.model.gradient_hook.clear()
         
         # Forward pass through the entire model
         results = self.model(x, labels)

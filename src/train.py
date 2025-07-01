@@ -51,7 +51,10 @@ def train_contrastive_model(config, train_loader, val_loader):
     
     # Log InfoNCE loss status
     enable_infonce = config.get('enable_infonce', True)
+    infonce_feature_type = config.get('infonce_feature_type', 'grad')
     logger.info(f"InfoNCE contrastive loss: {'Enabled' if enable_infonce else 'Disabled'}")
+    if enable_infonce:
+        logger.info(f"InfoNCE feature type: {infonce_feature_type}")
     
     # Set seed for reproducibility
     set_seed(config.get('seed', 42))
@@ -71,7 +74,8 @@ def train_contrastive_model(config, train_loader, val_loader):
         augnet_dim=config.get('augnet_dim', 224),
         augnet_heads=config.get('augnet_heads', 8),
         temperature=config.get('temperature', 0.1),
-        enable_infonce=config.get('enable_infonce', True)
+        enable_infonce=config.get('enable_infonce', True),
+        infonce_feature_type=config.get('infonce_feature_type', 'grad')
     ).to(device)
     
     # Create trainer
