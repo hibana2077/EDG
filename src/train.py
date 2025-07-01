@@ -115,6 +115,9 @@ def train_contrastive_model(config, train_loader, val_loader):
         # Save checkpoint
         if (epoch + 1) % config.get('save_interval', 10) == 0:
             save_checkpoint(model, trainer, epoch, config.get('checkpoint_dir', 'checkpoints'))
+    
+    # Return the trained model
+    return model
 
 
 def train_epoch(trainer, dataloader, device, logger):
@@ -212,6 +215,37 @@ def load_config(config_path):
     return config
 
 
+def visualize_augnet_results(model, val_loader, config, device):
+    """
+    Visualize AugNet results if visualization is enabled in config
+    """
+    # Check if visualization is enabled
+    vis_config = config.get('visualization', {})
+    if not vis_config.get('enable', False):
+        return
+    
+    try:
+        # Import here to avoid import errors if visualization is not enabled
+        from visualize_augnet import visualize_augnet_examples
+        
+        # Get visualization parameters
+        num_examples = vis_config.get('num_examples', 4)
+        output_path = vis_config.get('output_path', 'augnet_examples.png')
+        
+        # Run visualization
+        logging.info(f"Generating AugNet visualization with {num_examples} examples...")
+        output_path = visualize_augnet_examples(
+            model=model,
+            val_loader=val_loader,
+            num_examples=num_examples,
+            output_path=output_path,
+            device=device
+        )
+        logging.info(f"Visualization saved to {output_path}")
+    except Exception as e:
+        logging.error(f"Visualization failed: {str(e)}")
+
+
 if __name__ == "__main__":
     # Load configuration
     config = load_config('config_contrastive.yaml')
@@ -226,6 +260,10 @@ if __name__ == "__main__":
         train_loader, val_loader = create_contrastive_dataloaders(config)
     
     # Start training
-    train_contrastive_model(config, train_loader, val_loader)
+    model = train_contrastive_model(config, train_loader, val_loader)
+    
+    # Generate visualization after training
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    visualize_augnet_results(model, val_loader, config, device)
     
     print("Training completed successfully!")

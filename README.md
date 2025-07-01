@@ -18,11 +18,11 @@ src/
 │   └── augnet.py                  # Learnable augmentation network
 ├── utils/
 │   ├── loss.py                    # MomentHoMDivLoss
-│   ├── contrastive_loss.py        # InfoNCE Loss and gradient Hook
-│   └── data_utils.py              # Data loading utilities
-├── train_contrastive.py           # Training script
-├── inference.py                   # Inference script
-└── config_contrastive.yaml        # Configuration file
+│   └── contrastive_loss.py        # InfoNCE loss implementation
+├── train.py                       # Main training script
+├── inference.py                   # Inference functions
+├── visualize_augnet.py            # AugNet visualization tool
+└── generate_augnet_visualization.py  # Script to generate visualizations from checkpoints
 ```
 
 ## Usage
@@ -98,6 +98,24 @@ python inference.py --checkpoint checkpoints/checkpoint_epoch_50.pth \
                    --mode augment \
                    --num_augs 10
 ```
+
+## AugNet Visualization
+
+After training, the model can automatically generate visualizations showing the effect of the AugNet on several sample images. This helps in understanding how the learned augmentation transforms the input images.
+
+### Generating Visualizations
+
+To generate visualizations from a trained model checkpoint:
+
+```bash
+# Using the batch script (Windows)
+visualize_augnet.bat checkpoints/checkpoint_epoch_100.pth --num-examples 4
+
+# Or directly with Python
+python src/generate_augnet_visualization.py --checkpoint checkpoints/checkpoint_epoch_100.pth --output augnet_visualization.png
+```
+
+The visualization will show the original images alongside their AugNet transformations, helping to understand the learned augmentation space.
 
 ## Key Features
 
