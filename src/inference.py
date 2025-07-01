@@ -7,7 +7,7 @@ import argparse
 import numpy as np
 
 from models.contrastive_model import ContrastiveModel
-from train_contrastive import create_backbone, load_config
+from train import create_backbone, load_config
 
 
 class ContrastiveInference:
