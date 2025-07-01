@@ -243,7 +243,9 @@ def visualize_augnet_results(model, val_loader, config, device):
         )
         logging.info(f"Visualization saved to {output_path}")
     except Exception as e:
+        import traceback
         logging.error(f"Visualization failed: {str(e)}")
+        logging.error(traceback.format_exc())
 
 
 if __name__ == "__main__":

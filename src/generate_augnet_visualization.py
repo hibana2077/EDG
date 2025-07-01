@@ -68,14 +68,19 @@ def main():
         
     # Generate visualization
     print(f"Generating visualization with {args.num_examples} examples...")
-    output_path = visualize_augnet_examples(
-        model=model,
-        val_loader=val_loader,
-        num_examples=args.num_examples,
-        output_path=args.output,
-        device=device
-    )
-    print(f"Visualization saved to {output_path}")
+    try:
+        output_path = visualize_augnet_examples(
+            model=model,
+            val_loader=val_loader,
+            num_examples=args.num_examples,
+            output_path=args.output,
+            device=device
+        )
+        print(f"Visualization saved to {output_path}")
+    except Exception as e:
+        import traceback
+        print(f"Error generating visualization: {str(e)}")
+        print(traceback.format_exc())
 
 
 if __name__ == "__main__":
