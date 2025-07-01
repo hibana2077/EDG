@@ -40,19 +40,49 @@ class ContrastiveDataset(Dataset):
         Override this method for your specific dataset
         Should return (data_paths, labels) or (data_tensors, labels)
         """
-        # Placeholder implementation - replace with your dataset loading logic
-        if 'Cotton80' in self.data_root:
+        # Try to detect dataset type based on existing files or path
+        try:
+            dataset_type = detect_dataset_type(self.data_root)
+            if dataset_type == 'cotton80':
+                return self._load_cotton80()
+            elif dataset_type == 'ip102':
+                return self._load_ip102()
+            elif dataset_type == 'soylocal':
+                return self._load_soylocal()
+        except ValueError:
+            pass
+        
+        # If detection fails, try pattern matching in path
+        data_root_lower = self.data_root.lower()
+        if 'cotton' in data_root_lower or 'Cotton80' in self.data_root:
             return self._load_cotton80()
-        elif 'IP102' in self.data_root:
+        elif 'ip102' in data_root_lower or 'IP102' in self.data_root:
             return self._load_ip102()
-        elif 'SoyLocal' in self.data_root:
+        elif 'soy' in data_root_lower or 'SoyLocal' in self.data_root:
             return self._load_soylocal()
         else:
-            raise NotImplementedError(f"Dataset loading for {self.data_root} not implemented")
+            # Default to Cotton80 if no specific dataset detected
+            print(f"No specific dataset detected for {self.data_root}, defaulting to Cotton80")
+            return self._load_cotton80()
     
     def _load_cotton80(self):
         """Load Cotton80 dataset"""
-        from ..dataset.Cotton80 import Cotton80Dataset
+        try:
+            from src.dataset.Cotton80 import Cotton80Dataset
+        except ImportError:
+            # Fallback for different import paths
+            try:
+                from dataset.Cotton80 import Cotton80Dataset
+            except ImportError:
+                import sys
+                import os
+                # Add the parent directory to sys.path
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                src_dir = os.path.dirname(current_dir)
+                project_dir = os.path.dirname(src_dir)
+                sys.path.insert(0, project_dir)
+                sys.path.insert(0, src_dir)
+                from dataset.Cotton80 import Cotton80Dataset
         
         # Create root directory if it doesn't exist
         os.makedirs(self.data_root, exist_ok=True)
@@ -89,7 +119,22 @@ class ContrastiveDataset(Dataset):
     
     def _load_ip102(self):
         """Load IP102 dataset"""
-        from ..dataset.IP102 import IP102Dataset
+        try:
+            from src.dataset.IP102 import IP102Dataset
+        except ImportError:
+            # Fallback for different import paths
+            try:
+                from dataset.IP102 import IP102Dataset
+            except ImportError:
+                import sys
+                import os
+                # Add the parent directory to sys.path
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                src_dir = os.path.dirname(current_dir)
+                project_dir = os.path.dirname(src_dir)
+                sys.path.insert(0, project_dir)
+                sys.path.insert(0, src_dir)
+                from dataset.IP102 import IP102Dataset
         
         # Create root directory if it doesn't exist
         os.makedirs(self.data_root, exist_ok=True)
@@ -114,7 +159,22 @@ class ContrastiveDataset(Dataset):
     
     def _load_soylocal(self):
         """Load SoyLocal dataset"""
-        from ..dataset.SoyLocal import SoyLocalDataset
+        try:
+            from src.dataset.SoyLocal import SoyLocalDataset
+        except ImportError:
+            # Fallback for different import paths
+            try:
+                from dataset.SoyLocal import SoyLocalDataset
+            except ImportError:
+                import sys
+                import os
+                # Add the parent directory to sys.path
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                src_dir = os.path.dirname(current_dir)
+                project_dir = os.path.dirname(src_dir)
+                sys.path.insert(0, project_dir)
+                sys.path.insert(0, src_dir)
+                from dataset.SoyLocal import SoyLocalDataset
         
         # Create root directory if it doesn't exist
         os.makedirs(self.data_root, exist_ok=True)
@@ -230,13 +290,52 @@ def load_existing_dataset(dataset_name: str, **kwargs):
     Load existing dataset implementations from dataset/ folder
     """
     if dataset_name.lower() == 'cotton80':
-        from ..dataset.Cotton80 import Cotton80Dataset
+        try:
+            from src.dataset.Cotton80 import Cotton80Dataset
+        except ImportError:
+            try:
+                from dataset.Cotton80 import Cotton80Dataset
+            except ImportError:
+                import sys
+                import os
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                src_dir = os.path.dirname(current_dir)
+                project_dir = os.path.dirname(src_dir)
+                sys.path.insert(0, project_dir)
+                sys.path.insert(0, src_dir)
+                from dataset.Cotton80 import Cotton80Dataset
         return Cotton80Dataset(**kwargs)
     elif dataset_name.lower() == 'ip102':
-        from ..dataset.IP102 import IP102Dataset
+        try:
+            from src.dataset.IP102 import IP102Dataset
+        except ImportError:
+            try:
+                from dataset.IP102 import IP102Dataset
+            except ImportError:
+                import sys
+                import os
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                src_dir = os.path.dirname(current_dir)
+                project_dir = os.path.dirname(src_dir)
+                sys.path.insert(0, project_dir)
+                sys.path.insert(0, src_dir)
+                from dataset.IP102 import IP102Dataset
         return IP102Dataset(**kwargs)
     elif dataset_name.lower() == 'soylocal':
-        from ..dataset.SoyLocal import SoyLocalDataset
+        try:
+            from src.dataset.SoyLocal import SoyLocalDataset
+        except ImportError:
+            try:
+                from dataset.SoyLocal import SoyLocalDataset
+            except ImportError:
+                import sys
+                import os
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                src_dir = os.path.dirname(current_dir)
+                project_dir = os.path.dirname(src_dir)
+                sys.path.insert(0, project_dir)
+                sys.path.insert(0, src_dir)
+                from dataset.SoyLocal import SoyLocalDataset
         return SoyLocalDataset(**kwargs)
     else:
         raise ValueError(f"Unknown dataset: {dataset_name}")
@@ -360,7 +459,20 @@ def ensure_dataset_exists(dataset_name: str, data_root: str) -> bool:
         dataset_dir = os.path.join(data_root, 'COTTON')
         if not os.path.exists(dataset_dir):
             print(f"Downloading Cotton80 dataset to {data_root}...")
-            from ..dataset.Cotton80 import Cotton80Dataset
+            try:
+                from src.dataset.Cotton80 import Cotton80Dataset
+            except ImportError:
+                try:
+                    from dataset.Cotton80 import Cotton80Dataset
+                except ImportError:
+                    import sys
+                    import os
+                    current_dir = os.path.dirname(os.path.abspath(__file__))
+                    src_dir = os.path.dirname(current_dir)
+                    project_dir = os.path.dirname(src_dir)
+                    sys.path.insert(0, project_dir)
+                    sys.path.insert(0, src_dir)
+                    from dataset.Cotton80 import Cotton80Dataset
             Cotton80Dataset(
                 root=data_root,
                 split='train',
@@ -373,7 +485,20 @@ def ensure_dataset_exists(dataset_name: str, data_root: str) -> bool:
         dataset_dir = os.path.join(data_root, 'ip102_v1.1')
         if not os.path.exists(dataset_dir):
             print(f"Downloading IP102 dataset to {data_root}...")
-            from ..dataset.IP102 import IP102Dataset
+            try:
+                from src.dataset.IP102 import IP102Dataset
+            except ImportError:
+                try:
+                    from dataset.IP102 import IP102Dataset
+                except ImportError:
+                    import sys
+                    import os
+                    current_dir = os.path.dirname(os.path.abspath(__file__))
+                    src_dir = os.path.dirname(current_dir)
+                    project_dir = os.path.dirname(src_dir)
+                    sys.path.insert(0, project_dir)
+                    sys.path.insert(0, src_dir)
+                    from dataset.IP102 import IP102Dataset
             IP102Dataset(
                 root=data_root,
                 split='train',
@@ -385,7 +510,20 @@ def ensure_dataset_exists(dataset_name: str, data_root: str) -> bool:
         dataset_dir = os.path.join(data_root, 'soybean200')
         if not os.path.exists(dataset_dir):
             print(f"Downloading SoyLocal dataset to {data_root}...")
-            from ..dataset.SoyLocal import SoyLocalDataset
+            try:
+                from src.dataset.SoyLocal import SoyLocalDataset
+            except ImportError:
+                try:
+                    from dataset.SoyLocal import SoyLocalDataset
+                except ImportError:
+                    import sys
+                    import os
+                    current_dir = os.path.dirname(os.path.abspath(__file__))
+                    src_dir = os.path.dirname(current_dir)
+                    project_dir = os.path.dirname(src_dir)
+                    sys.path.insert(0, project_dir)
+                    sys.path.insert(0, src_dir)
+                    from dataset.SoyLocal import SoyLocalDataset
             SoyLocalDataset(
                 root=data_root,
                 split='train',
