@@ -110,6 +110,8 @@ class ContrastiveModel(nn.Module):
         classification_loss = 0.5 * (ce_loss1 + ce_loss2)
         
         # InfoNCE loss (will be computed on gradient features during backward)
+        # make sure there are on same device
+        proj1 = proj1.to(proj2.device)
         contrastive_loss = self.infonce_loss(proj1, proj2)
         
         return {
