@@ -109,9 +109,15 @@ class ContrastiveModel(nn.Module):
         ce_loss2 = self.ce_loss(cls_pred2, labels)
         classification_loss = 0.5 * (ce_loss1 + ce_loss2)
         
+        # Clamp projections to prevent NaN/Inf values
+        proj1 = torch.clamp(proj1, min=-50, max=50)
+        proj2 = torch.clamp(proj2, min=-50, max=50)
+        
+        # Replace NaN values with zeros
+        proj1 = torch.where(torch.isnan(proj1), torch.zeros_like(proj1), proj1)
+        proj2 = torch.where(torch.isnan(proj2), torch.zeros_like(proj2), proj2)
+        
         # InfoNCE loss (will be computed on gradient features during backward)
-        # make sure there are on same device
-        proj1 = proj1.to(proj2.device)
         contrastive_loss = self.infonce_loss(proj1, proj2)
         
         return {
