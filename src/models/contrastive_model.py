@@ -104,6 +104,14 @@ class ContrastiveModel(nn.Module):
         """
         Compute all losses
         """
+        # Validate labels are within valid range
+        num_classes = cls_pred1.size(1)
+        valid_mask = (labels >= 0) & (labels < num_classes)
+        
+        if not valid_mask.all():
+            # Clamp invalid labels to valid range
+            labels = torch.clamp(labels, 0, num_classes - 1)
+        
         # Classification losses
         ce_loss1 = self.ce_loss(cls_pred1, labels)
         ce_loss2 = self.ce_loss(cls_pred2, labels)
