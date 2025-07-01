@@ -52,21 +52,67 @@ class ContrastiveDataset(Dataset):
     
     def _load_cotton80(self):
         """Load Cotton80 dataset"""
-        # Implement Cotton80 loading logic
-        # This should match the implementation in dataset/Cotton80.py
-        pass
+        from ..dataset.Cotton80 import Cotton80Dataset
+        
+        dataset = Cotton80Dataset(
+            root=self.data_root,
+            split=self.split,
+            transform=None,  # We'll apply transforms in __getitem__
+            download=False
+        )
+        
+        # Extract image paths and labels
+        data_paths = []
+        labels = []
+        
+        cotton_dir = os.path.join(self.data_root, 'COTTON')
+        images_dir = os.path.join(cotton_dir, 'images')
+        
+        for image_name, label in dataset.samples:
+            image_path = os.path.join(images_dir, image_name)
+            data_paths.append(image_path)
+            labels.append(label)
+        
+        return data_paths, labels
     
     def _load_ip102(self):
         """Load IP102 dataset"""
-        # Implement IP102 loading logic
-        # This should match the implementation in dataset/IP102.py
-        pass
+        from ..dataset.IP102 import IP102Dataset
+        
+        dataset = IP102Dataset(
+            root=self.data_root,
+            split=self.split,
+            transform=None,  # We'll apply transforms in __getitem__
+            download=False
+        )
+        
+        # IP102Dataset already provides data (image paths) and targets
+        return dataset.data, dataset.targets
     
     def _load_soylocal(self):
         """Load SoyLocal dataset"""
-        # Implement SoyLocal loading logic
-        # This should match the implementation in dataset/SoyLocal.py
-        pass
+        from ..dataset.SoyLocal import SoyLocalDataset
+        
+        dataset = SoyLocalDataset(
+            root=self.data_root,
+            split=self.split,
+            transform=None,  # We'll apply transforms in __getitem__
+            download=False
+        )
+        
+        # Extract image paths and labels
+        data_paths = []
+        labels = []
+        
+        soybean_dir = os.path.join(self.data_root, 'soybean200')
+        images_dir = os.path.join(soybean_dir, 'images')
+        
+        for filename, label in zip(dataset.samples, dataset.targets):
+            image_path = os.path.join(images_dir, filename)
+            data_paths.append(image_path)
+            labels.append(label)
+        
+        return data_paths, labels
     
     def __len__(self):
         return len(self.data)
@@ -150,13 +196,13 @@ def load_existing_dataset(dataset_name: str, **kwargs):
     Load existing dataset implementations from dataset/ folder
     """
     if dataset_name.lower() == 'cotton80':
-        from dataset.Cotton80 import Cotton80Dataset  # Assuming class name
+        from ..dataset.Cotton80 import Cotton80Dataset
         return Cotton80Dataset(**kwargs)
     elif dataset_name.lower() == 'ip102':
-        from dataset.IP102 import IP102Dataset  # Assuming class name
+        from ..dataset.IP102 import IP102Dataset
         return IP102Dataset(**kwargs)
     elif dataset_name.lower() == 'soylocal':
-        from dataset.SoyLocal import SoyLocalDataset  # Assuming class name
+        from ..dataset.SoyLocal import SoyLocalDataset
         return SoyLocalDataset(**kwargs)
     else:
         raise ValueError(f"Unknown dataset: {dataset_name}")
@@ -166,28 +212,33 @@ def create_dataloaders_from_existing(dataset_name: str, config: dict) -> Tuple[D
     """
     Create dataloaders using existing dataset implementations
     """
+    # Common transform for both train and val (minimal since AugNet handles augmentation)
+    base_transform = transforms.Compose([
+        transforms.Resize((config['image_size'], config['image_size'])),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                           std=[0.229, 0.224, 0.225])
+    ])
+    
+    # Dataset-specific parameters
+    dataset_kwargs = {
+        'root': config.get('data_root', './data'),
+        'transform': base_transform,
+        'download': config.get('download', False)
+    }
+    
     # Load train dataset
     train_dataset = load_existing_dataset(
         dataset_name,
         split='train',
-        transform=transforms.Compose([
-            transforms.Resize((config['image_size'], config['image_size'])),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                               std=[0.229, 0.224, 0.225])
-        ])
+        **dataset_kwargs
     )
     
     # Load validation dataset
     val_dataset = load_existing_dataset(
         dataset_name,
         split='val',
-        transform=transforms.Compose([
-            transforms.Resize((config['image_size'], config['image_size'])),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                               std=[0.229, 0.224, 0.225])
-        ])
+        **{k: v for k, v in dataset_kwargs.items() if k != 'download'}  # Don't download again
     )
     
     # Create dataloaders
@@ -195,7 +246,7 @@ def create_dataloaders_from_existing(dataset_name: str, config: dict) -> Tuple[D
         train_dataset,
         batch_size=config['batch_size'],
         shuffle=True,
-        num_workers=config['num_workers'],
+        num_workers=config.get('num_workers', 4),
         pin_memory=torch.cuda.is_available(),
         drop_last=True
     )
@@ -204,7 +255,7 @@ def create_dataloaders_from_existing(dataset_name: str, config: dict) -> Tuple[D
         val_dataset,
         batch_size=config['batch_size'],
         shuffle=False,
-        num_workers=config['num_workers'],
+        num_workers=config.get('num_workers', 4),
         pin_memory=torch.cuda.is_available()
     )
     
