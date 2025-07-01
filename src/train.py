@@ -96,9 +96,10 @@ def train_contrastive_model(config, train_loader, val_loader):
         # Log metrics
         logger.info(f"Train - AugNet Loss: {train_metrics['avg_augnet_loss']:.4f}, "
                    f"Contrastive Loss: {train_metrics['avg_contrastive_loss']:.4f}, "
-                   f"Classification Loss: {train_metrics['avg_classification_loss']:.4f}"
-                   f", Total Main Loss: {train_metrics['avg_total_main_loss']:.4f}")
-        
+                   f"Classification Loss: {train_metrics['avg_classification_loss']:.4f}, "
+                   f"Total Main Loss: {train_metrics['avg_total_main_loss']:.4f}, "
+                   f"Train Acc: {train_metrics['avg_train_accuracy']:.4f}")
+
         logger.info(f"Val - Total Loss: {val_metrics['avg_total_loss']:.4f}, "
                    f"Accuracy: {val_metrics['avg_accuracy']:.4f}")
         
