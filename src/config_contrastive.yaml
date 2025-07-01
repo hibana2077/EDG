@@ -22,7 +22,7 @@ weight_decay: 1.0e-4
 # Loss weights
 lambda_moment: 1.0  # Weight for moment loss in AugNet training
 gamma_div: 1.0      # Weight for divergence loss in AugNet training
-enable_infonce: true  # Enable/disable InfoNCE contrastive loss
+enable_infonce: false  # Enable/disable InfoNCE contrastive loss
 
 # Data Configuration
 batch_size: 32
