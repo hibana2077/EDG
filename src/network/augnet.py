@@ -9,11 +9,18 @@ class AugNet(nn.Module):
         super(AugNet, self).__init__()
         self.dim = dim
         self.num_heads = num_heads
-        self.backbone = TinyVitBlock(dim=dim, num_heads=num_heads)
+        self.backbone1 = TinyVitBlock(dim=dim, num_heads=num_heads)
+        self.backbone2 = TinyVitBlock(dim=dim, num_heads=num_heads)
 
     def forward(self, x):
-        return self.backbone(x)
-    
+        x = self.backbone1(x)
+        with torch.no_grad():
+            # Apply Monte Carlo Gaussian noise
+            noise = torch.randn_like(x) * 0.1
+            x = x + noise
+        x = self.backbone2(x)
+        return x
+
 
 if __name__ == "__main__":
     # Example usage
