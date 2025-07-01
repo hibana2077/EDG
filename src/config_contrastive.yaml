@@ -15,9 +15,9 @@ num_epochs: 100
 seed: 42
 
 # Optimization
-augnet_lr: 1e-4
-model_lr: 1e-3
-weight_decay: 1e-4
+augnet_lr: 1.0e-4  # Learning rate for AugNet
+model_lr: 1.0e-3
+weight_decay: 1.0e-4
 
 # Loss weights
 lambda_moment: 1.0  # Weight for moment loss in AugNet training
