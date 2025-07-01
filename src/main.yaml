@@ -10,16 +10,17 @@ dataset:
   batch_size: 32
   num_workers: 6
 
-model:
+model: # Timm model names
   # name: resnetrs200
   # name: vgg19_bn
+  # name: resnet50
   name: tiny_vit_21m_384
   pretrained: true
 
 other:
-  constractive_learning:
-    # Options: SimCLR, MoCo, BYOL, MaskCOV, EDG
-    name: SimCLR
+  edg:
+    aug_net: true
+    grad_feature: true
 
 training:
   epochs: 20

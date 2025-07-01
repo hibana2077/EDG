@@ -1,0 +1,39 @@
+# Contrastive Learning Configuration
+
+# Model Configuration
+backbone: "resnet50"  # timm model name
+pretrained: true
+num_classes: 10  # Change based on your dataset
+projection_dim: 128
+hidden_dim: 2048
+augnet_dim: 224
+augnet_heads: 8
+temperature: 0.1
+
+# Training Configuration
+num_epochs: 100
+seed: 42
+
+# Optimization
+augnet_lr: 1e-4
+model_lr: 1e-3
+weight_decay: 1e-4
+
+# Loss weights
+lambda_moment: 1.0  # Weight for moment loss in AugNet training
+gamma_div: 1.0      # Weight for divergence loss in AugNet training
+
+# Data Configuration
+batch_size: 32
+num_workers: 4
+image_size: 224
+
+# Checkpointing
+save_interval: 10
+checkpoint_dir: "checkpoints"
+
+# Dataset paths (update these based on your dataset)
+dataset_name: "cotton80"  # Options: cotton80, ip102, soylocal
+data_root: "path/to/your/dataset"
+train_split: "train"
+val_split: "val"

@@ -17,21 +17,6 @@ def centralized_moments(x: torch.Tensor, order: int, eps: float = 1e-8):
     cm = (centralized ** order).mean(dim=-1)   # (B, C)
     return cm / (std.squeeze(-1) ** order + eps)
 
-def centralized_moments(x: torch.Tensor, order: int, eps: float = 1e-8):
-    """
-    x: (B, C, H, W) 影像，值域可為 0~1 或已標準化
-    order: 3 → Skewness；4 → Kurtosis
-    以 (H, W) 為樣本維度，回傳 (B, C) 向量
-    """
-    B, C, H, W = x.shape
-    x_flat = x.view(B, C, -1)                  # (B, C, N)
-    mean = x_flat.mean(dim=-1, keepdim=True)   # (B, C, 1)
-    std = x_flat.std(dim=-1, keepdim=True) + eps
-
-    centralized = x_flat - mean
-    cm = (centralized ** order).mean(dim=-1)   # (B, C)
-    return cm / (std.squeeze(-1) ** order + eps)
-
 def get_probs(t: torch.Tensor) -> torch.Tensor:
     B = t.size(0)
     return F.softmax(t.view(B, -1), dim=1)
