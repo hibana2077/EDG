@@ -96,7 +96,8 @@ def train_contrastive_model(config, train_loader, val_loader):
         # Log metrics
         logger.info(f"Train - AugNet Loss: {train_metrics['avg_augnet_loss']:.4f}, "
                    f"Contrastive Loss: {train_metrics['avg_contrastive_loss']:.4f}, "
-                   f"Classification Loss: {train_metrics['avg_classification_loss']:.4f}")
+                   f"Classification Loss: {train_metrics['avg_classification_loss']:.4f}"
+                   f", Total Main Loss: {train_metrics['avg_total_main_loss']:.4f}")
         
         logger.info(f"Val - Total Loss: {val_metrics['avg_total_loss']:.4f}, "
                    f"Accuracy: {val_metrics['avg_accuracy']:.4f}")
@@ -112,7 +113,8 @@ def train_epoch(trainer, dataloader, device, logger):
         'augnet_loss': 0.0,
         'contrastive_loss': 0.0,
         'classification_loss': 0.0,
-        'total_main_loss': 0.0
+        'total_main_loss': 0.0,
+        'train_accuracy': 0.0
     }
     num_batches = 0
     
@@ -133,7 +135,8 @@ def train_epoch(trainer, dataloader, device, logger):
         progress_bar.set_postfix({
             'AugNet': f"{metrics['augnet_loss']:.4f}",
             'Contrastive': f"{metrics['contrastive_loss']:.4f}",
-            'Classification': f"{metrics['classification_loss']:.4f}"
+            'Classification': f"{metrics['classification_loss']:.4f}",
+            'Train Acc': f"{metrics['train_accuracy']:.4f}"
         })
     
     # Average metrics
