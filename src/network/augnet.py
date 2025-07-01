@@ -5,9 +5,11 @@ import torch.nn.functional as F
 from timm.models.tiny_vit import TinyVitBlock
 
 class AugNet(nn.Module):
-    def __init__(self):
+    def __init__(self, dim=224, num_heads=8):
         super(AugNet, self).__init__()
-        self.backbone = TinyVitBlock(dim=224, num_heads=2)
+        self.dim = dim
+        self.num_heads = num_heads
+        self.backbone = TinyVitBlock(dim=dim, num_heads=num_heads)
 
     def forward(self, x):
         return self.backbone(x)
