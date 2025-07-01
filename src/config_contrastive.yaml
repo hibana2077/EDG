@@ -3,7 +3,7 @@
 # Model Configuration
 backbone: "resnet50"  # timm model name
 pretrained: true
-num_classes: 10  # Change based on your dataset
+num_classes: 80  # Change based on your dataset
 projection_dim: 128
 hidden_dim: 2048
 augnet_dim: 224
