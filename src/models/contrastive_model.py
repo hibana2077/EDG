@@ -209,11 +209,22 @@ class ContrastiveTrainer:
         total_loss.backward()
         self.model_optimizer.step()
         
+        # Compute accuracy
+        cls_pred1, cls_pred2 = results['cls_predictions']
+        with torch.no_grad():
+            pred1 = cls_pred1.argmax(dim=1)
+            pred2 = cls_pred2.argmax(dim=1)
+            
+            acc1 = (pred1 == labels).float().mean()
+            acc2 = (pred2 == labels).float().mean()
+            avg_acc = (acc1 + acc2) / 2
+        
         return {
             'augnet_loss': augnet_loss.item(),
             'contrastive_loss': losses['contrastive_loss'].item(),
             'classification_loss': losses['classification_loss'].item(),
-            'total_main_loss': total_loss.item()
+            'total_main_loss': total_loss.item(),
+            'train_accuracy': avg_acc.item()
         }
     
     def validate_step(self, x: torch.Tensor, labels: torch.Tensor) -> dict:
