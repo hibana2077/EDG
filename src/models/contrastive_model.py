@@ -22,8 +22,12 @@ class ContrastiveModel(nn.Module):
                  hidden_dim: int = 2048,
                  augnet_dim: int = 224,
                  augnet_heads: int = 8,
-                 temperature: float = 0.1):
+                 temperature: float = 0.1,
+                 enable_infonce: bool = True):
         super().__init__()
+        
+        # Store configuration
+        self.enable_infonce = enable_infonce
         
         # Components
         self.augnet = AugNet(dim=augnet_dim, num_heads=augnet_heads)
@@ -62,8 +66,8 @@ class ContrastiveModel(nn.Module):
         # Get projections for contrastive learning
         projections = self.projection_head(features_flat)
         
-        # Register hook for gradient features only if requires_grad
-        if projections.requires_grad:
+        # Register hook for gradient features only if InfoNCE is enabled and requires_grad
+        if self.enable_infonce and projections.requires_grad:
             projections.register_hook(self.gradient_hook.hook_fn)
         
         return features_flat, projections
@@ -126,8 +130,12 @@ class ContrastiveModel(nn.Module):
         proj2 = torch.where(torch.isnan(proj2), torch.zeros_like(proj2), proj2)
         
         # InfoNCE loss (will be computed on gradient features during backward)
-        # print(f"proj1 shape: {proj1.shape}, proj2 shape: {proj2.shape}")
-        contrastive_loss = self.infonce_loss(proj1, proj2)
+        # Only compute if enabled
+        if self.enable_infonce:
+            # print(f"proj1 shape: {proj1.shape}, proj2 shape: {proj2.shape}")
+            contrastive_loss = self.infonce_loss(proj1, proj2)
+        else:
+            contrastive_loss = torch.tensor(0.0, device=proj1.device, requires_grad=True)
         
         return {
             'contrastive_loss': contrastive_loss,

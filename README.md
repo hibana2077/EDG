@@ -50,7 +50,19 @@ augnet_lr: 1e-4         # AugNet learning rate
 model_lr: 1e-3          # Main model learning rate
 lambda_moment: 1.0      # Moment loss weight
 gamma_div: 1.0          # Divergence loss weight
+enable_infonce: true    # Enable/disable InfoNCE contrastive loss
 ```
+
+#### InfoNCE Loss Configuration
+
+The `enable_infonce` parameter allows you to control whether the InfoNCE contrastive loss is computed:
+
+- **`enable_infonce: true`** (default): Full contrastive learning with InfoNCE loss + classification loss
+- **`enable_infonce: false`**: Only classification loss is used (standard supervised learning)
+
+Example configurations are provided:
+- `config_contrastive.yaml`: Full contrastive learning (InfoNCE enabled)
+- `config_no_infonce.yaml`: Classification-only training (InfoNCE disabled)
 
 ### 3. Train the Model
 
@@ -120,6 +132,15 @@ model_optimizer.step()
 ### 4. Gradient Feature Contrastive Learning
 
 InfoNCE loss is applied to gradient features instead of direct features, providing richer representation learning.
+
+### 5. Flexible Loss Configuration
+
+The model supports flexible loss configuration through the `enable_infonce` parameter:
+
+- **Contrastive Learning Mode**: Both InfoNCE contrastive loss and classification loss
+- **Supervised Learning Mode**: Only classification loss (InfoNCE disabled)
+
+This allows you to compare the effectiveness of contrastive learning versus standard supervised learning on your dataset.
 
 ## Dataset Integration
 

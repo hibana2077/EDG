@@ -49,6 +49,10 @@ def train_contrastive_model(config, train_loader, val_loader):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     logger.info(f"Using device: {device}")
     
+    # Log InfoNCE loss status
+    enable_infonce = config.get('enable_infonce', True)
+    logger.info(f"InfoNCE contrastive loss: {'Enabled' if enable_infonce else 'Disabled'}")
+    
     # Set seed for reproducibility
     set_seed(config.get('seed', 42))
     
@@ -66,7 +70,8 @@ def train_contrastive_model(config, train_loader, val_loader):
         hidden_dim=config.get('hidden_dim', 2048),
         augnet_dim=config.get('augnet_dim', 224),
         augnet_heads=config.get('augnet_heads', 8),
-        temperature=config.get('temperature', 0.1)
+        temperature=config.get('temperature', 0.1),
+        enable_infonce=config.get('enable_infonce', True)
     ).to(device)
     
     # Create trainer
