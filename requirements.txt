@@ -1,3 +1,4 @@
 timm
 tqdm
 pillow
+matplotlib
