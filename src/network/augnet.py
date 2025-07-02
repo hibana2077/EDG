@@ -3,14 +3,17 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from timm.models.tiny_vit import TinyVitBlock
+from timm.models.convnext import ConvNeXtBlock
 
 class AugNet(nn.Module):
     def __init__(self, dim=224, num_heads=8):
         super(AugNet, self).__init__()
         self.dim = dim
         self.num_heads = num_heads
-        self.backbone1 = TinyVitBlock(dim=dim, num_heads=num_heads)
-        self.backbone2 = TinyVitBlock(dim=dim, num_heads=num_heads)
+        # self.backbone1 = TinyVitBlock(dim=dim, num_heads=num_heads)
+        self.backbone1 = ConvNeXtBlock(in_chs=3)
+        # self.backbone2 = TinyVitBlock(dim=dim, num_heads=num_heads)
+        self.backbone2 = ConvNeXtBlock(in_chs=3)
 
     def forward(self, x):
         x = self.backbone1(x)
