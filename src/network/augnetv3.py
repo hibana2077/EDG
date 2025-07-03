@@ -25,6 +25,11 @@ class AugNet(nn.Module):
             self.rs,
         ])
 
+    def show(self):
+        print("Augmentation Layers:")
+        for aug in self.aug_layers:
+            print(aug)
+
     def forward(self, x):
         for aug in self.aug_layers:
             x = aug.to(x.device)(x)
