@@ -19,3 +19,31 @@
 ### Kornia Norm + Rand Const
 
 ![Kornia Norm + Rand Const](./norm_rc.png)
+
+## Conclusion
+
+我搞砸了，Kornia的Rand部分的參數不可學，如果直接改成可學習的參數，會導致參數更沒辦法學習，因為我的loss會約束圖片長一樣，但是取消了rand後，就更不可能會有不一樣的點了，所以loss歸0，參數跟預設值一樣。
+
+![alt text](para_zero.png)
+
+![alt text](para_zero2.png)
+
+## Extra Experiment
+
+### Kornia Norm + img infonce + cls loss
+
+0.4297
+
+### Kornia Norm + grad infonce + cls loss
+
+0.4531
+
+### Kornia Rand Sharp + img infonce + cls loss
+
+0.3301
+
+### Kornia Rand Sharp + grad infonce + cls loss
+
+0.3438
+
+## Next Steps
