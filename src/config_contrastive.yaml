@@ -34,6 +34,10 @@ image_size: 224
 save_interval: 10
 checkpoint_dir: "checkpoints"
 
+# Early Stopping Configuration
+patience: 10          # Number of epochs to wait for improvement before stopping
+min_delta: 0.001      # Minimum improvement threshold for validation accuracy
+
 # Dataset paths (update these based on your dataset)
 dataset_name: "Cotton80"  # Options: Cotton80, IP102, SoyLocal
 data_root: "data"

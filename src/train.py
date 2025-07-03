@@ -91,6 +91,12 @@ def train_contrastive_model(config, train_loader, val_loader):
     # Training loop
     num_epochs = config.get('num_epochs', 100)
     
+    # Best accuracy tracking and early stopping
+    best_val_accuracy = 0.0
+    epochs_without_improvement = 0
+    patience = config.get('patience', 10)  # Early stopping patience
+    min_delta = config.get('min_delta', 0.001)  # Minimum improvement threshold
+    
     for epoch in range(num_epochs):
         logger.info(f"Epoch {epoch+1}/{num_epochs}")
         
@@ -112,9 +118,37 @@ def train_contrastive_model(config, train_loader, val_loader):
         logger.info(f"Val - Total Loss: {val_metrics['avg_total_loss']:.4f}, "
                    f"Accuracy: {val_metrics['avg_accuracy']:.4f}")
         
-        # Save checkpoint
+        # Check if validation accuracy improved
+        current_val_accuracy = val_metrics['avg_accuracy']
+        
+        if current_val_accuracy > best_val_accuracy + min_delta:
+            best_val_accuracy = current_val_accuracy
+            epochs_without_improvement = 0
+            
+            # Save best model
+            save_best_model(model, trainer, epoch, best_val_accuracy, config.get('checkpoint_dir', 'checkpoints'))
+            logger.info(f"New best validation accuracy: {best_val_accuracy:.4f}")
+        else:
+            epochs_without_improvement += 1
+            logger.info(f"No improvement for {epochs_without_improvement} epochs (best: {best_val_accuracy:.4f})")
+        
+        # Regular checkpoint saving
         if (epoch + 1) % config.get('save_interval', 10) == 0:
             save_checkpoint(model, trainer, epoch, config.get('checkpoint_dir', 'checkpoints'))
+        
+        # Early stopping check
+        if epochs_without_improvement >= patience:
+            logger.info(f"Early stopping triggered after {epochs_without_improvement} epochs without improvement")
+            logger.info(f"Best validation accuracy achieved: {best_val_accuracy:.4f}")
+            break
+    
+    # Load best model before returning
+    best_model_path = os.path.join(config.get('checkpoint_dir', 'checkpoints'), 'best_model.pth')
+    if os.path.exists(best_model_path):
+        logger.info(f"Loading best model from {best_model_path}")
+        checkpoint = torch.load(best_model_path, map_location=device)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        logger.info(f"Best model loaded with validation accuracy: {checkpoint['best_accuracy']:.4f}")
     
     # Return the trained model
     return model
@@ -208,6 +242,22 @@ def save_checkpoint(model, trainer, epoch, checkpoint_dir):
     logging.info(f"Checkpoint saved to {checkpoint_path}")
 
 
+def save_best_model(model, trainer, epoch, best_accuracy, checkpoint_dir):
+    """Save the best model checkpoint based on validation accuracy"""
+    os.makedirs(checkpoint_dir, exist_ok=True)
+    best_model_path = os.path.join(checkpoint_dir, 'best_model.pth')
+    
+    torch.save({
+        'epoch': epoch,
+        'model_state_dict': model.state_dict(),
+        'augnet_optimizer_state_dict': trainer.augnet_optimizer.state_dict(),
+        'model_optimizer_state_dict': trainer.model_optimizer.state_dict(),
+        'best_accuracy': best_accuracy,
+    }, best_model_path)
+    
+    logging.info(f"Best model saved to {best_model_path} with accuracy: {best_accuracy:.4f}")
+
+
 def load_config(config_path):
     """Load configuration from YAML file"""
     with open(config_path, 'r') as f:
@@ -246,6 +296,28 @@ def visualize_augnet_results(model, val_loader, config, device):
         import traceback
         logging.error(f"Visualization failed: {str(e)}")
         logging.error(traceback.format_exc())
+
+
+def load_best_model(model, trainer, checkpoint_dir, device):
+    """Load the best model checkpoint"""
+    best_model_path = os.path.join(checkpoint_dir, 'best_model.pth')
+    
+    if not os.path.exists(best_model_path):
+        logging.warning(f"Best model checkpoint not found at {best_model_path}")
+        return None
+    
+    checkpoint = torch.load(best_model_path, map_location=device)
+    model.load_state_dict(checkpoint['model_state_dict'])
+    
+    if trainer is not None:
+        trainer.augnet_optimizer.load_state_dict(checkpoint['augnet_optimizer_state_dict'])
+        trainer.model_optimizer.load_state_dict(checkpoint['model_optimizer_state_dict'])
+    
+    best_accuracy = checkpoint.get('best_accuracy', 0.0)
+    epoch = checkpoint.get('epoch', 0)
+    
+    logging.info(f"Best model loaded from {best_model_path} (epoch {epoch+1}, accuracy: {best_accuracy:.4f})")
+    return best_accuracy
 
 
 if __name__ == "__main__":
