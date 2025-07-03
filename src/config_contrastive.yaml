@@ -1,7 +1,7 @@
 # Contrastive Learning Configuration
 
 # Model Configuration
-backbone: "resnet50"  # timm model name
+backbone: "tiny_vit_21m_224"  # timm model name
 pretrained: true
 num_classes: 80  # Change based on your dataset
 projection_dim: 128
