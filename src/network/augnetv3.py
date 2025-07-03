@@ -5,6 +5,20 @@ import kornia.augmentation as K
 from timm.models.tiny_vit import TinyVitBlock
 from timm.models.convnext import ConvNeXtBlock
 
+class LearnableContrast(nn.Module):
+    def __init__(self, init_factor: float = 0.5):
+        super().__init__()
+        # 單一 learnable factor，或你想學兩端範圍都可以
+        self.factor = nn.Parameter(torch.tensor(init_factor))
+
+    def __repr__(self):
+        return f"factor: {self.factor}"
+    
+    def forward(self, x):
+        # (B,C,H,W)；center = 每張圖各自的平均亮度
+        mean = x.mean(dim=[2,3], keepdim=True)
+        return torch.clamp((x - mean) * self.factor + mean, 0., 1.)
+
 class AugNet(nn.Module):
     def __init__(self, dim: int = 224, num_heads:int=8):
         super().__init__()
@@ -16,13 +30,12 @@ class AugNet(nn.Module):
         # ＝ 幾何增強 ＝
 
         # ＝ 光度增強 ＝
-        self.st_1 = nn.Parameter(torch.tensor(0.5))
-        self.rs = K.RandomSharpness(self.st_1,p=1.)
+        self.rc = LearnableContrast()
         
         # 按順序收好，方便迴圈處理
         self.aug_layers = nn.ModuleList([
-            self.norm,
-            self.rs,
+            # self.norm,
+            self.rc,
         ])
 
     def show(self):
