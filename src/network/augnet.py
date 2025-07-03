@@ -1,30 +1,40 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+import kornia.augmentation as K
 from timm.models.tiny_vit import TinyVitBlock
 from timm.models.convnext import ConvNeXtBlock
 
 class AugNet(nn.Module):
-    def __init__(self, dim=224, num_heads=8):
-        super(AugNet, self).__init__()
-        self.dim = dim
-        self.num_heads = num_heads
-        # self.backbone1 = TinyVitBlock(dim=dim, num_heads=num_heads)
-        self.backbone1 = ConvNeXtBlock(in_chs=3)
-        # self.backbone2 = TinyVitBlock(dim=dim, num_heads=num_heads)
-        self.backbone2 = ConvNeXtBlock(in_chs=3)
+    def __init__(self, dim: int = 224, num_heads:int=8):
+        super().__init__()
+
+
+        self.norm_mean = nn.Parameter(torch.zeros(3))
+        self.norm_std = nn.Parameter(torch.ones(3))
+        self.norm = K.Normalize(mean=self.norm_mean, std=self.norm_std)
+        # ＝ 幾何增強 ＝
+
+        # ＝ 光度增強 ＝
+        self.st_1 = nn.Parameter(torch.tensor(0.5))
+        self.rs = K.RandomSharpness(self.st_1,p=1.)
+        
+        # 按順序收好，方便迴圈處理
+        self.aug_layers = nn.ModuleList([
+            self.norm,
+            self.rs,
+        ])
+
+    def show(self):
+        print("Augmentation Layers:")
+        for aug in self.aug_layers:
+            print(aug)
 
     def forward(self, x):
-        x = self.backbone1(x)
-        with torch.no_grad():
-            # Apply Monte Carlo Gaussian noise
-            noise = torch.randn_like(x) * 0.1
-        x = x + noise
-        x = self.backbone2(x)
+        for aug in self.aug_layers:
+            x = aug.to(x.device)(x)
         return x
-
-
+    
 if __name__ == "__main__":
     # Example usage
     model = AugNet()
