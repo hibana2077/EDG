@@ -47,3 +47,6 @@
 0.3438
 
 ## Next Steps
+
+- Revisit the augmentation strategy to ensure it enhances model performance.(randomness and consistency)
+- Propose a new representation to final infonce loss.
