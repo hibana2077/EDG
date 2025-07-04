@@ -48,5 +48,11 @@
 
 ## Next Steps
 
-- Revisit the augmentation strategy to ensure it enhances model performance.(randomness and consistency)
-- Propose a new representation to final infonce loss.
+### Revisit the augmentation strategy to ensure it enhances model performance.(randomness and consistency)
+
+- 之前有試過隨機雜訊搭配兩個vit block，但效果很差。
+- 嘗試 noise + kornia norm。
+
+### Propose a new representation to final infonce loss.
+
+- {4,5,6}th order statistic (grad or image)

@@ -16,13 +16,13 @@ class AugNet(nn.Module):
         # ＝ 幾何增強 ＝
 
         # ＝ 光度增強 ＝
-        self.st_1 = nn.Parameter(torch.tensor(0.5))
-        self.rs = K.RandomSharpness(self.st_1,p=1.)
+        # self.st_1 = nn.Parameter(torch.tensor(0.5))
+        # self.rs = K.RandomSharpness(self.st_1,p=1.)
         
         # 按順序收好，方便迴圈處理
         self.aug_layers = nn.ModuleList([
             self.norm,
-            self.rs,
+            # self.rs,
         ])
 
     def show(self):
